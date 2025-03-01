@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Smart Home Energy Monitor (MongoDB Version)
 
 This project simulates a smart home energy monitoring system using Python, Flask, and MongoDB, **randomizing** the total monthly usage and cost for each run.
