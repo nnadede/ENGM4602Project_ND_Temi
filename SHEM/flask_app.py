@@ -1,18 +1,18 @@
 # SHEM/flask_app.py
-import random
 import datetime
 import pandas as pd
 from flask import Flask, jsonify, request
-from flask_cors import CORS  # <-- Add/keep this import
+from flask_cors import CORS
+
 from .sensors import CategorySensor
 from .controllers import EnergyController
 from .prediction import PredictionModel
 from .db_handler import DBHandler
 
 app = Flask(__name__)
-CORS(app)  # <-- Enable CORS for all routes
+CORS(app)  # enable CORS for all routes
 
-# 1) Define your category sensors with base usage approximations
+# 1) Define your category sensors (including HVAC)
 category_sensors = [
     CategorySensor("Heating", 300),
     CategorySensor("Water Heating", 250),
@@ -21,58 +21,140 @@ category_sensors = [
     CategorySensor("Entertainment", 150),
     CategorySensor("Refrigeration", 100),
     CategorySensor("Always On", 50),
-    CategorySensor("Other", 100)
+    CategorySensor("Other", 100),
+    CategorySensor("HVAC", 350)  # newly added
 ]
 
-# 2) Randomize the monthly usage/cost for each run
-household_usage = random.randint(3000, 5000)  # e.g., 3000-5000 kWh
-household_cost = random.randint(300, 1600)    # e.g., $700-$1000
-print(f"Simulating household usage = {household_usage} kWh, cost = ${household_cost} for this run.")
+# 2) Initialize controller with sensors and a realistic cost rate
+controller = EnergyController(sensors=category_sensors, cost_rate=0.12)
 
-# 3) Initialize controller with the random usage/cost
-controller = EnergyController(
-    sensors=category_sensors,
-    total_kwh=household_usage,
-    total_cost=household_cost
-)
-
-# 4) Prepare a DB handler for queries (already set to Atlas)
+# 3) Prepare a DB handler for queries
 db = DBHandler()
 
-# 5) Build or update the prediction model from historical data
-historical_df = db.fetch_readings_as_df()
-if not historical_df.empty:
-    grouped = historical_df.groupby("timestamp", as_index=False).agg({"usage": "sum"})
-    prediction_model = PredictionModel(historical_data=grouped)
-else:
-    prediction_model = PredictionModel()
+def build_prediction_model():
+    """
+    Helper function to build or update the prediction model from historical data.
+    We'll group by simulation_date to get total_usage per month.
+    """
+    history = db.fetch_history()  # returns a list of dicts with simulation_date, total_usage, total_cost
+    if not history:
+        return None
+
+    df = pd.DataFrame(history)
+    if df.empty or len(df) < 2:
+        # Not enough data
+        return None
+
+    # rename columns to match what we expect in PredictionModel
+    df.rename(columns={"total_usage": "total_usage"}, inplace=True)
+
+    # Pass it to the model
+    model = PredictionModel(historical_data=df)
+    if model.is_trained:
+        return model
+    return None
+
+# Build the model at startup (if enough data)
+prediction_model = build_prediction_model()
 
 @app.route("/")
 def home():
     return "<h1>Smart Home Energy Monitor</h1><p>Welcome to the home page.</p>"
 
+@app.route("/simulate", methods=["POST"])
+def simulate():
+    """
+    Simulate the next month's usage, log it, and return the results.
+    """
+    result = controller.simulate_month()
+    # Rebuild the prediction model with updated data
+    global prediction_model
+    prediction_model = build_prediction_model()
+    return jsonify(result)
+
 @app.route("/readings", methods=["GET"])
 def get_readings():
     """
-    Simulate a new set of category readings (which also logs them in DB).
-    Returns the newly gathered usage/cost data.
+    Get readings for a specific month (YYYY-MM-DD) or the latest month if none is provided.
     """
-    data = controller.gather_data()
-    return jsonify({"data": data})
+    month_param = request.args.get("month")
+    if not month_param:
+        # if user doesn't specify, get the latest date
+        month_param = db.get_latest_date()
+        if not month_param:
+            return jsonify({"message": "No entries available.", "readings": []}), 200
+
+    readings = db.fetch_readings_for_date(month_param)
+    if not readings:
+        return jsonify({"message": f"No readings for {month_param}.", "readings": []}), 200
+
+    return jsonify({"simulation_date": month_param, "readings": readings})
+
+@app.route("/clear_readings", methods=["DELETE"])
+def clear_readings():
+    success = db.clear_readings()
+    if success:
+        return jsonify({"message": "All readings cleared."})
+    else:
+        return jsonify({"error": "Failed to clear readings."}), 500
+
+@app.route("/history", methods=["GET"])
+def get_history():
+    """
+    Returns aggregated usage/cost by month for charting.
+    """
+    history = db.fetch_history()
+    if not history:
+        return jsonify({"history": [], "message": "No historical data found."}), 200
+    return jsonify({"history": history})
 
 @app.route("/predict", methods=["GET"])
 def predict_usage():
     """
-    Predict total usage for a given timestamp (or now if not provided).
+    Predict usage for the 'next' month index or a future month index.
+    For simplicity, we let the user pass a 'target_month' in YYYY-MM-DD format,
+    figure out its month index, and predict. If no model, return an error.
     """
-    timestamp_str = request.args.get("timestamp")
-    if not timestamp_str:
-        timestamp_str = datetime.datetime.now().isoformat()
+    if not prediction_model or not prediction_model.is_trained:
+        return jsonify({"error": "Insufficient data to generate a prediction."}), 400
 
-    predicted_value = prediction_model.predict(timestamp_str)
+    target_month = request.args.get("month")
+    if not target_month:
+        return jsonify({"error": "Please provide 'month' in YYYY-MM-DD format."}), 400
+
+    # We need to figure out the month_index for the given target_month
+    # We'll fetch the entire history, sort by date, find the index for the last date, etc.
+    history = db.fetch_history()
+    df = pd.DataFrame(history).sort_values("simulation_date")
+    df["month_index"] = range(len(df))
+
+    # The highest month_index in existing data:
+    max_index = df["month_index"].max()
+
+    # If the target_month is beyond the last known month, we can just say it's next in line
+    # or find exactly how many months ahead it is. For simplicity, let's do:
+    #  find the earliest date, then count how many months from that to target_month.
+    # This is a simplified approach.
+    earliest_str = df["simulation_date"].iloc[0]
+    y0, m0, d0 = map(int, earliest_str.split("-"))
+    earliest_dt = datetime.date(y0, m0, d0)
+
+    ty, tm, td = map(int, target_month.split("-"))
+    target_dt = datetime.date(ty, tm, td)
+
+    # Count months from earliest_dt to target_dt
+    month_diff = (target_dt.year - earliest_dt.year) * 12 + (target_dt.month - earliest_dt.month)
+    if month_diff < 0:
+        return jsonify({"error": "Target month is before earliest recorded month."}), 400
+
+    # Predict using that index
+    predicted_value = prediction_model.predict(month_diff)
+    if predicted_value is None:
+        return jsonify({"error": "Prediction failed."}), 500
+
     return jsonify({
-        "timestamp": timestamp_str,
-        "predicted_usage": predicted_value
+        "target_month": target_month,
+        "predicted_usage_kwh": predicted_value
     })
 
 @app.route("/suggestions", methods=["GET"])
@@ -84,29 +166,12 @@ def get_suggestions():
     if current_usage is None:
         return jsonify({"error": "Please provide current usage via 'usage' parameter"}), 400
 
-    suggestions = prediction_model.provide_suggestions(current_usage)
+    # If we don't have a trained model, we can still provide suggestions, or
+    # we can just do it unconditionally. For now, let's do it unconditionally:
+    model = prediction_model if prediction_model else PredictionModel()
+    suggestions = model.provide_suggestions(current_usage)
     return jsonify({"current_usage": current_usage, "suggestions": suggestions})
 
-@app.route("/breakdown", methods=["GET"])
-def get_breakdown():
-    """
-    Returns an aggregated breakdown of usage and cost by category from DB.
-    """
-    all_readings = db.fetch_all_readings()
-    if not all_readings:
-        return jsonify({"message": "No readings available."}), 200
-
-    df = pd.DataFrame(all_readings)
-    grouped = df.groupby("category", as_index=False).agg({"usage": "sum", "cost": "sum"})
-    breakdown_list = grouped.to_dict(orient="records")
-    total_usage = grouped["usage"].sum()
-    total_cost = grouped["cost"].sum()
-
-    return jsonify({
-        "breakdown": breakdown_list,
-        "total_usage_kwh": total_usage,
-        "total_cost_usd": total_cost
-    })
 
 if __name__ == "__main__":
     # IMPORTANT: Run from the parent directory using: python -m SHEM.flask_app

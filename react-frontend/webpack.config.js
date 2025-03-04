@@ -9,7 +9,8 @@ module.exports = {
   },
   devServer: {
     static: path.resolve(__dirname, 'public'),
-    historyApiFallback: true
+    historyApiFallback: true,
+    port: 3000
   },
   module: {
     rules: [
@@ -25,6 +26,6 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: ['.js']
+    extensions: ['.js', '.jsx']
   }
 };
