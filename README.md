@@ -38,6 +38,7 @@ This project simulates a monthly smart home energy monitoring system using Pytho
       - By default, these charts display data for the most recent month; clicking on a bar in the corresponding chart updates the respective doughnut chart.
     - ![Dashboard1 Screenshot](react-frontend/public/images/Dashboard1.png)
     - ![Dashboard2 Screenshot](react-frontend/public/images/Dashboard2.png)
+    - ![Dashboard2 Screenshot](react-frontend/public/images/Overall-Dashboard.png)
 
 - **Readings:**  
   - Shows data for the most recent (or selected) month and offers a **"Simulate Next Month"** button to generate new data.
