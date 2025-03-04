@@ -41,7 +41,7 @@ function Home() {
 
       {history.length > 0 && (
         <Card>
-          <h2>Cost vs. Month</h2>
+          <h2>Cost per month</h2>
           <BarChart width={600} height={300} data={history} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="simulation_date" />
@@ -55,7 +55,7 @@ function Home() {
 
       {history.length > 0 && (
         <Card>
-          <h2>Usage vs. Month</h2>
+          <h2>Power usage per month</h2>
           <BarChart width={600} height={300} data={history} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="simulation_date" />
