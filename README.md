@@ -36,19 +36,19 @@ This project simulates a monthly smart home energy monitoring system using Pytho
       - **Cost Distribution Doughnut Chart:** Displays cost breakdown per category for the selected month.  
       - **Power Usage Distribution Doughnut Chart:** Displays power usage breakdown per category for the selected month.  
       - By default, these charts display data for the most recent month; clicking on a bar in the corresponding chart updates the respective doughnut chart.
-    - ![Dashboard1 Screenshot](react-frontend/public/images/Dashboard1.png)
-    - ![Dashboard2 Screenshot](react-frontend/public/images/Dashboard2.png)
-    - ![Dashboard2 Screenshot](react-frontend/public/images/Overall-Dashboard.png)
+     ![Dashboard1 Screenshot](react-frontend/public/images/Dashboard1.png)
+     ![Dashboard2 Screenshot](react-frontend/public/images/Dashboard2.png)
+     ![Dashboard2 Screenshot](react-frontend/public/images/Overall-Dashboard.png)
 
 - **Readings:**  
   - Shows data for the most recent (or selected) month and offers a **"Simulate Next Month"** button to generate new data.
   - Includes an inline **"Clear All Data"** button that triggers a warning modal before deleting all readings from the database.
-  - ![Readings Page Screenshot](react-frontend/public/images/Readings.png)
+   ![Readings Page Screenshot](react-frontend/public/images/Readings.png)
 
 - **Breakdown:**  
   - Displays usage/cost per category for a chosen month.
   - Accepts input in `YYYY-MM` format (year and month only) to filter data.
-  - ![Breakdown Page Screenshot](path/to/breakdown-image.png)
+   ![Breakdown Page Screenshot](path/to/breakdown-image.png)
 
 - **Predict:**  
   - Allows users to enter a future month (e.g., "2025-05-01") to view a usage forecast.
@@ -58,9 +58,9 @@ This project simulates a monthly smart home energy monitoring system using Pytho
 
 - **UI Enhancements:**  
   - Uses Cards, Modals, and Loading Spinners for a polished interface.
-  - ![Modal Screenshot](react-frontend/public/images/Modal.png)
-  - ![Error Modal Screenshot1](react-frontend/public/images/home_page_error_modal.png)
-  - ![Error Modal Screenshot2](react-frontend/public/images/readings_error_modal.png)
+   ![Modal Screenshot](react-frontend/public/images/Modal.png)
+   ![Error Modal Screenshot1](react-frontend/public/images/home_page_error_modal.png)
+   ![Error Modal Screenshot2](react-frontend/public/images/readings_error_modal.png)
 ---
 
 ## Installation & Setup
