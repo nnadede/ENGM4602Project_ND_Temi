@@ -10,12 +10,13 @@ function Breakdown() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchBreakdown = async (formattedMonth) => {
+  // Expecting month input in "YYYY-MM" format
+  const fetchBreakdown = async (selectedMonth) => {
     setLoading(true);
     setError(null);
     setReadings([]);
     try {
-      const response = await axios.get('http://127.0.0.1:5000/readings', { params: { month: formattedMonth } });
+      const response = await axios.get('http://127.0.0.1:5000/readings', { params: { month: selectedMonth } });
       if (response.data.message && response.data.readings.length === 0) {
         setError(response.data.message);
       } else {
@@ -35,15 +36,15 @@ function Breakdown() {
       <ErrorModal error={error} onClear={clearError} />
       {loading && <LoadingSpinner asOverlay />}
       <h2>Monthly Breakdown</h2>
-      <div>
-        <label>Month (YYYY-MM): </label>
+      <div div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+        <label>Year and Month (YYYY-MM): </label>
         <input
           type="text"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
           placeholder="YYYY-MM"
         />
-        <button onClick={() => fetchBreakdown(`${month}-01`)}>Get Breakdown</button>
+        <button onClick={() => fetchBreakdown(month)}>Get Breakdown</button>
       </div>
       {readings.length > 0 && (
         <>
@@ -68,7 +69,7 @@ function Breakdown() {
         </>
       )}
       {readings.length === 0 && !loading && !error && (
-        <p>No breakdown available. Try entering a valid month or simulate data.</p>
+        <p>No breakdown available. Try entering a valid year and month or simulate data.</p>
       )}
     </Card>
   );

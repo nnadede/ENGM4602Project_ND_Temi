@@ -4,34 +4,45 @@
     top: 20vh;
     left: 10%;
     width: 80%;
+    max-width: 40rem;            /* Ensures a fixed max width for the entire modal */
     background: white;
     box-shadow: 0 2px 8px rgba(0,0,0,0.26);
     border-radius: 8px;
+    box-sizing: border-box;       /* Use border-box for consistent sizing */
   }
   
-  .modal__header {
+  .modal__header,
+  .modal__content,
+  .modal__footer {
     width: 100%;
+    box-sizing: border-box;       /* Ensure padding doesn't enlarge total width */
+    margin: 0;                    /* Remove any default margins */
     padding: 1rem;
+  }
+  
+  /* HEADER */
+  .modal__header {
     background: #2a006e;
     color: white;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
   }
   
-  .modal__content {
-    padding: 1rem;
-  }
-  
+  /* FOOTER */
   .modal__footer {
-    padding: 1rem;
     text-align: right;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
   }
   
   @media (min-width: 768px) {
     .modal {
-      left: calc(50% - 20rem);
-      width: 40rem;
+      left: calc(50% - 20rem);    /* Center the modal horizontally */
+      width: 40rem;              /* Use a fixed width at larger screens */
     }
   }
   
+  /* BACKDROP */
   .backdrop {
     position: fixed;
     z-index: 50;
@@ -40,22 +51,20 @@
     background: rgba(0,0,0,0.75);
   }
   
+  /* TRANSITIONS (if you’re using CSSTransition) */
   .modal-enter {
     transform: translateY(-10rem);
     opacity: 0;
   }
-  
   .modal-enter-active {
     transform: translateY(0);
     opacity: 1;
     transition: all 200ms;
   }
-  
   .modal-exit {
     transform: translateY(0);
     opacity: 1;
   }
-  
   .modal-exit-active {
     transform: translateY(-10rem);
     opacity: 0;

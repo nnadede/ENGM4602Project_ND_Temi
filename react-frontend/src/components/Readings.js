@@ -109,7 +109,7 @@ function Readings() {
       ) : (
         <p>No readings available.</p>
       )}
-      <div className="button-group">
+      <div className="button-group" style={{ display: 'flex', gap: '1rem' }}>
         <button onClick={simulateNextMonth}>Simulate Next Month</button>
         <button onClick={openClearModal}>Clear All Data</button>
       </div>
@@ -120,8 +120,10 @@ function Readings() {
           header="Clear All Data"
           footer={
             <>
-              <button onClick={() => setShowClearModal(false)}>Cancel</button>
-              <button onClick={confirmClear}>Confirm</button>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
+                <button onClick={() => setShowClearModal(false)}>Cancel</button>
+                <button onClick={confirmClear}>Confirm</button>
+              </div>
             </>
           }
         >
