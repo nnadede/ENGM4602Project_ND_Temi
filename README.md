@@ -1,4 +1,4 @@
-Smart Home Energy Monitor (MongoDB Version) – v2.0
+# Smart Home Energy Monitor (MongoDB Version) – v2.0
 This project simulates a monthly smart home energy monitoring system using Python, Flask, and MongoDB Atlas. It provides a React front-end for visualizing energy usage, cost, and predictions, and uses scikit-learn for basic predictive analytics.
 
 Key Features
