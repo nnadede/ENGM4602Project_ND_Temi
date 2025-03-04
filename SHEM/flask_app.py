@@ -74,17 +74,19 @@ def simulate():
 
 @app.route("/readings", methods=["GET"])
 def get_readings():
-    """
-    Get readings for a specific month (YYYY-MM-DD) or the latest month if none is provided.
-    """
     month_param = request.args.get("month")
     if not month_param:
-        # if user doesn't specify, get the latest date
+        # if no month provided, use the latest date from the database
         month_param = db.get_latest_date()
         if not month_param:
             return jsonify({"message": "No entries available.", "readings": []}), 200
 
-    readings = db.fetch_readings_for_date(month_param)
+    # If the parameter is in "YYYY-MM" format (7 characters), use the month filter
+    if len(month_param) == 7:
+        readings = db.fetch_readings_for_month(month_param)
+    else:
+        readings = db.fetch_readings_for_date(month_param)
+
     if not readings:
         return jsonify({"message": f"No readings for {month_param}.", "readings": []}), 200
 

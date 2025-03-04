@@ -20,6 +20,15 @@ class DBHandler:
         except Exception as e:
             print(f"Error connecting to MongoDB Atlas: {e}")
 
+
+    def fetch_readings_for_month(self, month_prefix):
+        try:
+            # Use a regex to match simulation_date starting with the provided "YYYY-MM"
+            return list(self.collection.find({ "simulation_date": { "$regex": f"^{month_prefix}" } }, {"_id": 0}))
+        except Exception as e:
+            print(f"Error fetching documents for month {month_prefix}: {e}")
+            return []
+
     def log_reading(self, category, usage, cost, simulation_date):
         """
         Insert a reading document into the collection.
