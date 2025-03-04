@@ -3,14 +3,17 @@ import axios from 'axios';
 import Card from './UI/Card';
 import LoadingSpinner from './UI/LoadingSpinner';
 import ErrorModal from './UI/ErrorModal';
+import Modal from './UI/Modal';
 
 function Readings() {
   const [data, setData] = useState(null);
   const [simulationDate, setSimulationDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
-  // By default, fetch the latest month if it exists
+  // Fetch latest readings on mount
   useEffect(() => {
     fetchLatestReadings();
   }, []);
@@ -39,7 +42,6 @@ function Readings() {
     setError(null);
     try {
       const response = await axios.post('http://127.0.0.1:5000/simulate');
-      // response.data => { simulation_date, readings: [...] }
       setData(response.data.readings);
       setSimulationDate(response.data.simulation_date);
     } catch (err) {
@@ -50,6 +52,34 @@ function Readings() {
   };
 
   const clearError = () => setError(null);
+
+  // Open modal with a warning message
+  const openClearModal = () => {
+    setModalMessage('WARNING: This action will permanently delete all readings from the database. Are you sure you want to proceed?');
+    setShowClearModal(true);
+  };
+
+  // Confirm clearing data and update UI
+  const confirmClear = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.delete('http://127.0.0.1:5000/clear_readings');
+      // Update modal message based on response
+      if (response.data.message) {
+        setModalMessage(response.data.message);
+      } else {
+        setModalMessage('No data to clear.');
+      }
+      // Refresh readings after clearing
+      fetchLatestReadings();
+    } catch (err) {
+      setModalMessage('Error clearing data.');
+    } finally {
+      setLoading(false);
+      setShowClearModal(false);
+    }
+  };
 
   return (
     <Card>
@@ -79,7 +109,25 @@ function Readings() {
       ) : (
         <p>No readings available.</p>
       )}
-      <button onClick={simulateNextMonth}>Simulate Next Month</button>
+      <div className="button-group">
+        <button onClick={simulateNextMonth}>Simulate Next Month</button>
+        <button onClick={openClearModal}>Clear All Data</button>
+      </div>
+      {showClearModal && (
+        <Modal
+          show={showClearModal}
+          onCancel={() => setShowClearModal(false)}
+          header="Clear All Data"
+          footer={
+            <>
+              <button onClick={() => setShowClearModal(false)}>Cancel</button>
+              <button onClick={confirmClear}>Confirm</button>
+            </>
+          }
+        >
+          <p>{modalMessage}</p>
+        </Modal>
+      )}
     </Card>
   );
 }

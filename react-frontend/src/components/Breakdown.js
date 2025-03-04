@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import Card from './UI/Card';
 import LoadingSpinner from './UI/LoadingSpinner';
@@ -10,17 +10,13 @@ function Breakdown() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchBreakdown = async () => {
+  const fetchBreakdown = async (formattedMonth) => {
     setLoading(true);
     setError(null);
     setReadings([]);
     try {
-      // We'll re-use the /readings endpoint with ?month=
-      const response = await axios.get('http://127.0.0.1:5000/readings', {
-        params: { month }
-      });
+      const response = await axios.get('http://127.0.0.1:5000/readings', { params: { month: formattedMonth } });
       if (response.data.message && response.data.readings.length === 0) {
-        // No data for that month
         setError(response.data.message);
       } else {
         setReadings(response.data.readings);
@@ -34,28 +30,20 @@ function Breakdown() {
 
   const clearError = () => setError(null);
 
-  // Optionally, fetch the latest by default on mount
-  useEffect(() => {
-    // fetchBreakdown();
-  }, []);
-
-  const totalUsage = readings.reduce((sum, r) => sum + r.usage, 0);
-  const totalCost = readings.reduce((sum, r) => sum + r.cost, 0);
-
   return (
     <Card>
       <ErrorModal error={error} onClear={clearError} />
       {loading && <LoadingSpinner asOverlay />}
       <h2>Monthly Breakdown</h2>
       <div>
-        <label>Month (YYYY-MM-DD): </label>
+        <label>Month (YYYY-MM): </label>
         <input
           type="text"
           value={month}
           onChange={(e) => setMonth(e.target.value)}
-          placeholder="2025-05-01"
+          placeholder="YYYY-MM"
         />
-        <button onClick={fetchBreakdown}>Get Breakdown</button>
+        <button onClick={() => fetchBreakdown(`${month}-01`)}>Get Breakdown</button>
       </div>
       {readings.length > 0 && (
         <>
@@ -77,8 +65,6 @@ function Breakdown() {
               ))}
             </tbody>
           </table>
-          <p><strong>Total Usage:</strong> {totalUsage.toFixed(2)} kWh</p>
-          <p><strong>Total Cost:</strong> ${totalCost.toFixed(2)}</p>
         </>
       )}
       {readings.length === 0 && !loading && !error && (
