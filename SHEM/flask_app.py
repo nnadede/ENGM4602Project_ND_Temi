@@ -109,13 +109,18 @@ def get_history():
 def predict_usage():
     """
     Predict usage for a given month.
+    Now accepts input in YYYY-MM format.
     """
     if not prediction_model or not prediction_model.is_trained:
         return jsonify({"error": "Insufficient data to generate a prediction."}), 400
 
     target_month = request.args.get("month")
     if not target_month:
-        return jsonify({"error": "Please provide 'month' in YYYY-MM-DD format."}), 400
+        return jsonify({"error": "Please provide 'month' in YYYY-MM format."}), 400
+    
+    #If target_month is in "YYYY-MM" format, append "-01" to make it a full date
+    if len(target_month) == 7:
+        target_month = target_month + "-01"
 
     history = db.fetch_history()
     df = pd.DataFrame(history).sort_values("simulation_date")
@@ -223,7 +228,7 @@ def breakdown():
     for cat, data in breakdown_by_category.items():
         perc = data["usage_percentage"]
         if cat in ["Heating", "HVAC"]:
-            if season == "Winter" and perc > 30:
+            if  perc > 25:
                 suggestions_list.append(f"High {cat} usage detected in winter. Consider lowering your thermostat or improving insulation.")
             elif perc > 25:
                 suggestions_list.append(f"Consider optimizing your {cat} settings to reduce energy consumption.")
