@@ -12,7 +12,7 @@ from .db_handler import DBHandler
 app = Flask(__name__)
 CORS(app)  # enable CORS for all routes
 
-# 1) Define your category sensors (including HVAC)
+# Define your category sensors (including HVAC)
 category_sensors = [
     CategorySensor("Heating", 300),
     CategorySensor("Water Heating", 250),
@@ -25,30 +25,24 @@ category_sensors = [
     CategorySensor("HVAC", 350)  # newly added
 ]
 
-# 2) Initialize controller with sensors and a realistic cost rate
+# Initialize controller with sensors and a realistic cost rate
 controller = EnergyController(sensors=category_sensors, cost_rate=0.12)
 
-# 3) Prepare a DB handler for queries
+# Prepare a DB handler for queries
 db = DBHandler()
 
 def build_prediction_model():
     """
     Helper function to build or update the prediction model from historical data.
-    We'll group by simulation_date to get total_usage per month.
     """
-    history = db.fetch_history()  # returns a list of dicts with simulation_date, total_usage, total_cost
+    history = db.fetch_history()
     if not history:
         return None
 
     df = pd.DataFrame(history)
     if df.empty or len(df) < 2:
-        # Not enough data
         return None
 
-    # rename columns to match what we expect in PredictionModel
-    df.rename(columns={"total_usage": "total_usage"}, inplace=True)
-
-    # Pass it to the model
     model = PredictionModel(historical_data=df)
     if model.is_trained:
         return model
@@ -60,17 +54,6 @@ prediction_model = build_prediction_model()
 @app.route("/")
 def home():
     return "<h1>Smart Home Energy Monitor</h1><p>Welcome to the home page.</p>"
-
-@app.route("/simulate", methods=["POST"])
-def simulate():
-    """
-    Simulate the next month's usage, log it, and return the results.
-    """
-    result = controller.simulate_month()
-    # Rebuild the prediction model with updated data
-    global prediction_model
-    prediction_model = build_prediction_model()
-    return jsonify(result)
 
 @app.route("/readings", methods=["GET"])
 def get_readings():
@@ -91,6 +74,18 @@ def get_readings():
         return jsonify({"message": f"No readings for {month_param}.", "readings": []}), 200
 
     return jsonify({"simulation_date": month_param, "readings": readings})
+
+
+@app.route("/simulate", methods=["POST"])
+def simulate():
+    """
+    Simulate the next month's usage, log it, and return the results.
+    """
+    result = controller.simulate_month()
+    # Rebuild the prediction model with updated data
+    global prediction_model
+    prediction_model = build_prediction_model()
+    return jsonify(result)
 
 @app.route("/clear_readings", methods=["DELETE"])
 def clear_readings():
@@ -113,9 +108,7 @@ def get_history():
 @app.route("/predict", methods=["GET"])
 def predict_usage():
     """
-    Predict usage for the 'next' month index or a future month index.
-    For simplicity, we let the user pass a 'target_month' in YYYY-MM-DD format,
-    figure out its month index, and predict. If no model, return an error.
+    Predict usage for a given month.
     """
     if not prediction_model or not prediction_model.is_trained:
         return jsonify({"error": "Insufficient data to generate a prediction."}), 400
@@ -124,32 +117,20 @@ def predict_usage():
     if not target_month:
         return jsonify({"error": "Please provide 'month' in YYYY-MM-DD format."}), 400
 
-    # We need to figure out the month_index for the given target_month
-    # We'll fetch the entire history, sort by date, find the index for the last date, etc.
     history = db.fetch_history()
     df = pd.DataFrame(history).sort_values("simulation_date")
     df["month_index"] = range(len(df))
 
-    # The highest month_index in existing data:
-    max_index = df["month_index"].max()
-
-    # If the target_month is beyond the last known month, we can just say it's next in line
-    # or find exactly how many months ahead it is. For simplicity, let's do:
-    #  find the earliest date, then count how many months from that to target_month.
-    # This is a simplified approach.
     earliest_str = df["simulation_date"].iloc[0]
     y0, m0, d0 = map(int, earliest_str.split("-"))
     earliest_dt = datetime.date(y0, m0, d0)
 
     ty, tm, td = map(int, target_month.split("-"))
     target_dt = datetime.date(ty, tm, td)
-
-    # Count months from earliest_dt to target_dt
     month_diff = (target_dt.year - earliest_dt.year) * 12 + (target_dt.month - earliest_dt.month)
     if month_diff < 0:
         return jsonify({"error": "Target month is before earliest recorded month."}), 400
 
-    # Predict using that index
     predicted_value = prediction_model.predict(month_diff)
     if predicted_value is None:
         return jsonify({"error": "Prediction failed."}), 500
@@ -159,21 +140,127 @@ def predict_usage():
         "predicted_usage_kwh": predicted_value
     })
 
-@app.route("/suggestions", methods=["GET"])
-def get_suggestions():
+@app.route("/breakdown", methods=["GET"])
+def breakdown():
     """
-    Provide suggestions based on a 'usage' query parameter.
+    Merged breakdown and suggestions endpoint.
+    Returns a detailed breakdown of the most recent simulated month along with an efficiency rating
+    and dynamic suggestions (both general and category-specific).
     """
-    current_usage = request.args.get("usage", type=float)
-    if current_usage is None:
-        return jsonify({"error": "Please provide current usage via 'usage' parameter"}), 400
+    month_param = request.args.get("month")
+    if not month_param:
+        month_param = db.get_latest_date()
+        if not month_param:
+            return jsonify({"message": "No breakdown available. Please simulate data first.", "data": None}), 200
 
-    # If we don't have a trained model, we can still provide suggestions, or
-    # we can just do it unconditionally. For now, let's do it unconditionally:
-    model = prediction_model if prediction_model else PredictionModel()
-    suggestions = model.provide_suggestions(current_usage)
-    return jsonify({"current_usage": current_usage, "suggestions": suggestions})
+    # Determine if month_param is in "YYYY-MM" or full date format
+    if len(month_param) == 7:
+        readings = db.fetch_readings_for_month(month_param)
+    else:
+        readings = db.fetch_readings_for_date(month_param)
 
+    if not readings:
+        return jsonify({"message": f"No breakdown available for {month_param}. Try entering a valid year and month or start simulation.", "data": None}), 200
+
+    total_usage = sum(r["usage"] for r in readings)
+    total_cost = sum(r["cost"] for r in readings)
+    breakdown_by_category = {}
+    for r in readings:
+        cat = r["category"]
+        breakdown_by_category.setdefault(cat, {"usage": 0, "cost": 0})
+        breakdown_by_category[cat]["usage"] += r["usage"]
+        breakdown_by_category[cat]["cost"] += r["cost"]
+
+    # Calculate usage percentage for each category only (remove cost percentage)
+    for cat, data in breakdown_by_category.items():
+        data["usage_percentage"] = (data["usage"] / total_usage * 100) if total_usage > 0 else 0
+
+    # Determine season from the month
+    try:
+        _, month, _ = map(int, month_param.split("-"))
+    except Exception:
+        month = 1
+    if month in [12, 1, 2]:
+        season = "Winter"
+    elif month in [3, 4, 5]:
+        season = "Spring"
+    elif month in [6, 7, 8]:
+        season = "Summer"
+    else:
+        season = "Fall"
+
+    # Calculate efficiency rating based on total usage thresholds
+    if total_usage < 1000:
+        rating = "A"
+    elif total_usage < 1500:
+        rating = "B"
+    elif total_usage < 2000:
+        rating = "C"
+    elif total_usage < 2500:
+        rating = "D"
+    else:
+        rating = "F"
+
+    suggestions_list = []
+    # Add some general suggestions
+    suggestions_list.append("Review your monthly energy consumption and compare with previous months to track trends.")
+    suggestions_list.append("Consider scheduling regular appliance maintenance to improve efficiency.")
+
+    # Rating-based general suggestions
+    if rating == "F":
+        suggestions_list.append("Your overall energy consumption is alarming. Consider an energy audit immediately.")
+        suggestions_list.append("Explore renewable energy options to reduce dependency on traditional power sources.")
+    elif rating == "D":
+        suggestions_list.append("Your energy consumption is high. Upgrading to energy-efficient appliances might help.")
+    elif rating == "C":
+        suggestions_list.append("Moderate consumption detected. Look into minor behavioral changes to lower usage.")
+    elif rating == "B":
+        suggestions_list.append("Good energy usage overall, but there is room for improvement.")
+    else:
+        suggestions_list.append("Excellent energy efficiency! Continue your sustainable practices.")
+
+    # Category-specific suggestions (adding dynamic suggestions based on usage percentages)
+    for cat, data in breakdown_by_category.items():
+        perc = data["usage_percentage"]
+        if cat in ["Heating", "HVAC"]:
+            if season == "Winter" and perc > 30:
+                suggestions_list.append(f"High {cat} usage detected in winter. Consider lowering your thermostat or improving insulation.")
+            elif perc > 25:
+                suggestions_list.append(f"Consider optimizing your {cat} settings to reduce energy consumption.")
+        elif cat == "Lighting":
+            if season == "Winter" and perc > 25:
+                suggestions_list.append("Switching to LED bulbs and maximizing natural light can reduce lighting costs.")
+            elif perc > 20:
+                suggestions_list.append("Consider using smart lighting systems to control energy use.")
+        elif cat == "Water Heating":
+            if perc > 20:
+                suggestions_list.append("Lowering your water heater temperature or insulating your tank can improve efficiency.")
+        elif cat == "Cooking":
+            if perc > 15:
+                suggestions_list.append("Use energy-efficient cooking methods and appliances to save power.")
+        elif cat == "Entertainment":
+            if perc > 15:
+                suggestions_list.append("Unplug idle devices or use power strips to prevent phantom loads in entertainment systems.")
+        elif cat == "Refrigeration":
+            if perc > 15:
+                suggestions_list.append("Ensure your refrigerator is well-maintained and energy-efficient.")
+        elif cat == "Always On":
+            if perc > 10:
+                suggestions_list.append("Review devices that are always on and unplug those not in active use.")
+        elif cat == "Other":
+            if perc > 10:
+                suggestions_list.append("Check miscellaneous devices for hidden energy drains and optimize usage.")
+
+    dashboard_data = {
+        "simulation_date": month_param,
+        "total_usage": total_usage,
+        "total_cost": total_cost,
+        "breakdown_by_category": breakdown_by_category,
+        "efficiency_rating": rating,
+        "suggestions": suggestions_list
+    }
+
+    return jsonify({"message": "Breakdown data fetched successfully.", "data": dashboard_data})
 
 if __name__ == "__main__":
     # IMPORTANT: Run from the parent directory using: python -m SHEM.flask_app

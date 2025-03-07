@@ -1,0 +1,58 @@
+/* src/components/Breakdown.css */
+.breakdown-container {
+  padding: 1rem;
+}
+
+.search-group {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breakdown-card,
+.suggestions-card {
+  margin-bottom: 1rem;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.rating {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  color: white;
+}
+
+.rating-a {
+  background-color: green;
+}
+
+.rating-b {
+  background-color: lightgreen;
+  color: black;
+}
+
+.rating-c {
+  background-color: yellow;
+  color: black;
+}
+
+.rating-d {
+  background-color: orange;
+  color: black;
+}
+
+.rating-f {
+  background-color: red;
+}

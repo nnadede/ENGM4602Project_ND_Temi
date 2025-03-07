@@ -62,8 +62,8 @@ function ClearData() {
           header="Clear All Data"
           footer={
             <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '1rem' }}>
-              <button onClick={() => setShowClearModal(false)}>Cancel</button>
-              <button onClick={confirmClear}>Confirm</button>
+              <button type='button' onClick={() => setShowClearModal(false)}>Cancel</button>
+              <button type='button' onClick={confirmClear}>Confirm</button>
             </div>
           }
         >

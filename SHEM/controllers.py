@@ -1,5 +1,6 @@
 # SHEM/controllers.py
 import datetime
+import random
 from .db_handler import DBHandler
 
 class EnergyController:
@@ -15,43 +16,49 @@ class EnergyController:
     def simulate_month(self):
         """
         Simulates usage for the next month based on the most recent date in the DB.
-        If DB is empty, use today's date for the first simulation.
-        Otherwise, add one month to the latest date.
+        Also factors in seasonality and dynamic usage ranges.
         """
         # 1) Determine next simulation_date
         latest_date = self.db.get_latest_date()
         if latest_date is None:
-            # No data in DB, use current date in YYYY-MM-DD
             next_date = datetime.datetime.now().strftime("%Y-%m-%d")
         else:
-            # Convert string to date, then add one month
             year, month, day = map(int, latest_date.split("-"))
-            current_dt = datetime.date(year, month, day)
-            # Add one month
             new_month = month + 1
             new_year = year
             if new_month > 12:
                 new_month = 1
                 new_year += 1
-            # Keep the same day if possible, but watch out for edge cases (e.g., 31 -> next month)
-            # For simplicity, just clamp day if it's out of range for that month
-            # This is simplistic; you could do more robust date logic if needed
             try:
                 next_dt = datetime.date(new_year, new_month, day)
             except ValueError:
-                # if day is out of range, fallback to the last day of that month
-                # but let's just do day=1 for simplicity
                 next_dt = datetime.date(new_year, new_month, 1)
-
             next_date = next_dt.strftime("%Y-%m-%d")
 
-        # 2) For each sensor, read usage & compute cost
+        # 2) Determine season based on month
+        month_int = int(next_date.split("-")[1])
+        if month_int in [12, 1, 2]:
+            season = "Winter"
+        elif month_int in [3, 4, 5]:
+            season = "Spring"
+        elif month_int in [6, 7, 8]:
+            season = "Summer"
+        else:
+            season = "Fall"
+
+        # 3) Determine overall usage range scenario (weighted random choice)
+        usage_range = random.choices(
+            population=["low", "moderate", "above average", "high", "very high", "alarming"],
+            weights=[10, 20, 25, 25, 15, 5],
+            k=1
+        )[0]
+
         final_readings = []
         for sensor in self.sensors:
             try:
-                usage_kwh = sensor.read_data()
+                # Pass season and usage_range to sensor simulation
+                usage_kwh = sensor.read_data(season=season, usage_range=usage_range)
                 cost = usage_kwh * self.cost_rate
-                # Log to DB
                 self.db.log_reading(
                     category=sensor.category_name,
                     usage=usage_kwh,
@@ -64,7 +71,6 @@ class EnergyController:
                     "cost": cost
                 })
             except ValueError as e:
-                # Sensor malfunction
                 print(e)
 
         return {
