@@ -6,6 +6,18 @@ import LoadingSpinner from './UI/LoadingSpinner';
 import ErrorModal from './UI/ErrorModal';
 import './Breakdown.css';
 
+const formatMonthYear = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split("-"); //dateStr is in the format "YYYY-MM-DD"
+  const year = parts[0];
+  const month = parts[1];
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return `${monthNames[parseInt(month) - 1]} ${year}`;//month is 1-based index in JS Date object but 0-based in monthNames array 
+};
+
 function Breakdown() {
   const [data, setData] = useState(null);
   const [monthInput, setMonthInput] = useState(''); // for user input (YYYY-MM)
@@ -67,7 +79,7 @@ function Breakdown() {
       {data ? (
         <>
           <Card className="breakdown-card">
-            <h3>Breakdown for {data.simulation_date}</h3>
+            <h3>Breakdown for {formatMonthYear(data.simulation_date)}</h3>
             <p>Total Usage: {data.total_usage.toFixed(2)} kWh</p>
             <p>Total Cost: ${data.total_cost.toFixed(2)}</p>
             <table className="breakdown-table">

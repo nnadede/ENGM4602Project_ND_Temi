@@ -39,12 +39,12 @@ function Predictions() {
       <h2>Predict Energy Usage</h2>
       <div>
         <label>
-          Target Month (YYYY-MM-DD):
+          Target Month (YYYY-MM):
           <input
             type="text"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            placeholder="2025-05-01"
+            placeholder="e.g., 2026-02"
           />
         </label>
       </div>

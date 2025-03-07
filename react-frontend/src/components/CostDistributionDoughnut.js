@@ -7,6 +7,18 @@ import ErrorModal from './UI/ErrorModal';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A569BD', '#E74C3C', '#5DADE2', '#F4D03F', '#2ECC71'];
 
+const formatMonthYear = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split("-"); //dateStr is in the format "YYYY-MM-DD"
+  const year = parts[0];
+  const month = parts[1];
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return `${monthNames[parseInt(month) - 1]} ${year}`;//month is 1-based index in JS Date object but 0-based in monthNames array 
+};
+
 function CostDistributionDoughnut({ month }) {
   const [data, setData] = useState([]);
   const [totalCost, setTotalCost] = useState(0);
@@ -60,7 +72,7 @@ function CostDistributionDoughnut({ month }) {
 
   return (
     <Card>
-      <h3>Cost Distribution for {month}</h3>
+      <h3>Cost Distribution for {formatMonthYear(month)}</h3>
       {data.length > 0 ? (
         <>
           {/* 

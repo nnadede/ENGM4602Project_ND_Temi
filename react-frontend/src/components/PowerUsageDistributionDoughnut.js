@@ -17,6 +17,18 @@ const COLORS = [
   '#2ECC71'
 ];
 
+const formatMonthYear = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split("-"); //dateStr is in the format "YYYY-MM-DD"
+  const year = parts[0];
+  const month = parts[1];
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return `${monthNames[parseInt(month) - 1]} ${year}`;//month is 1-based index in JS Date object but 0-based in monthNames array 
+};
+
 function PowerUsageDistributionDoughnut({ month }) {
   const [data, setData] = useState([]);
   const [totalUsage, setTotalUsage] = useState(0);
@@ -76,7 +88,7 @@ function PowerUsageDistributionDoughnut({ month }) {
 
   return (
     <Card>
-      <h3>Power Usage Distribution for {month}</h3>
+      <h3>Power Usage Distribution for {formatMonthYear(month)}</h3>
       {data.length > 0 ? (
         <>
           {/* Center the chart within the card */}
