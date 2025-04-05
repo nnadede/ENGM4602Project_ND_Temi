@@ -80,10 +80,18 @@ cd smart_home_energy_monitor
 git checkout version-4.0
 ```
 
-### 2. Configure MongoDB Atlas
-In SHEM/db_handler.py, update the URI with your MongoDB Atlas credentials. By default, the code uses:
+### 2. Configure MongoDB Atlas and Environment Variables
+Before running the application, create a file named .env in the project root (where requirements.txt is located) and add your MongoDB credentials and settings:
 ```
-uri="mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.txypd.mongodb.net/?retryWrites=true&w=majority"
+SHEM_DB_URI="mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.txypd.mongodb.net/smart_home_energy_monitor?retryWrites=true&w=majority&appName=Cluster0"
+SHEM_DB_NAME="smart_home_energy_monitor"
+SHEM_COLLECTION_NAME="readings"
+```
+Note: Replace <USERNAME> and <PASSWORD> with your actual MongoDB Atlas credentials. The .env file is included in .gitignore, so your sensitive information will not be tracked by Git.
+
+Additionally, ensure that you have installed the python-dotenv package, which loads these environment variables when the application starts. If it is not installed, run:
+```
+pip install python-dotenv
 ```
 This stores data in the smart_home_energy_monitor database.
 
