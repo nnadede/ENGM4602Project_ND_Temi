@@ -66,7 +66,7 @@ This project simulates a monthly smart home energy monitoring system using Pytho
   - Uses Cards, Modals, and Loading Spinners for a polished interface.
    ![Modal Screenshot](react-frontend/public/images/Modal.png)
    ![Error Modal Screenshot1](react-frontend/public/images/home_page_error_modal.png)
-   ![Error Modal Screenshot2](react-frontend/public/images/readings_error_modal.png)
+   ![Error Modal Screenshot2](react-frontend/public/images/breakdown_error_modal.png)
 ---
 
 ## Installation & Setup
