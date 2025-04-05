@@ -87,7 +87,7 @@ SHEM_DB_URI="mongodb+srv://<USERNAME>:<PASSWORD>@cluster0.txypd.mongodb.net/smar
 SHEM_DB_NAME="smart_home_energy_monitor"
 SHEM_COLLECTION_NAME="readings"
 ```
-Note: Replace <USERNAME> and <PASSWORD> with your actual MongoDB Atlas credentials. The .env file is included in .gitignore, so your sensitive information will not be tracked by Git.
+Note: Replace "USERNAME" and "PASSWORD" with your actual MongoDB Atlas credentials. The .env file is included in .gitignore, so your sensitive information will not be tracked by Git.
 
 Additionally, ensure that you have installed the python-dotenv package, which loads these environment variables when the application starts. If it is not installed, run:
 ```
