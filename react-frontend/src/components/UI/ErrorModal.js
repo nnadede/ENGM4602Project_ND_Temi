@@ -9,7 +9,10 @@ const ErrorModal = props => {
       show={!!props.error}
       footer={<button type='button' onClick={props.onClear}>Okay</button>}
     >
-      <p>{props.error}</p>
+      <div className='error-container'>
+        <div className="error-icon">!</div>
+        <p className='error-text'>{props.error}</p>
+      </div>
     </Modal>
   );
 };

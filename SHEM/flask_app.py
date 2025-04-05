@@ -1,5 +1,6 @@
 # SHEM/flask_app.py
 import datetime
+import calendar
 import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -165,7 +166,20 @@ def breakdown():
         readings = db.fetch_readings_for_date(month_param)
 
     if not readings:
-        return jsonify({"message": f"No breakdown available for {month_param}. Try entering a valid year and month or start simulation.", "data": None}), 200
+        # Convert "YYYY-MM" to "MonthName YYYY"
+        try:
+            if len(month_param) == 7:
+                year, month = month_param.split("-")
+                formatted_date = f"{calendar.month_name[int(month)]} {year}"
+            else:
+                formatted_date = month_param
+
+        except Exception:
+            formatted_date = month_param
+        return jsonify({
+            "message": f"No breakdown available for {formatted_date}. Try entering a valid year and month or start simulation.", 
+            "data": None
+        }), 200
 
     total_usage = sum(r["usage"] for r in readings)
     total_cost = sum(r["cost"] for r in readings)

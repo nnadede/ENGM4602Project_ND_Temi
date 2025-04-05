@@ -53,8 +53,8 @@ function Home() {
           <Card>
             <h2>Cost per Month</h2>
             <BarChart
-              width={600}
-              height={300}
+              width={650}
+              height={400}
               data={history}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               onClick={(data) => {
@@ -64,9 +64,25 @@ function Home() {
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="simulation_date" />
+              <XAxis 
+                dataKey="simulation_date"
+                tickFormatter={(dateStr) => {
+                  const date = new Date(dateStr);
+                  return date.toLocaleDateString('default', {month: 'short', year: 'numeric'});
+                }} 
+              />
               <YAxis />
-              <Tooltip />
+              <Tooltip 
+                labelFormatter={(dateStr) => {
+                  const date = new Date(dateStr);
+                  return date.toLocaleDateString('default', {month: 'long', year: 'numeric'});
+                }}
+
+                formatter={(value, name, props) => {
+                  const rounded = parseFloat(value).toFixed(2);
+                  return [`$${rounded}`, 'Cost (USD)']
+                }}
+              />
               <Legend />
               <Bar dataKey="total_cost" fill="#8884d8" name="Cost (USD)" />
             </BarChart>
@@ -74,8 +90,8 @@ function Home() {
           <Card>
             <h2>Power Usage per Month</h2>
             <BarChart
-              width={600}
-              height={300}
+              width={650}
+              height={400}
               data={history}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               onClick={(data) => {
@@ -85,9 +101,25 @@ function Home() {
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="simulation_date" />
+              <XAxis 
+                dataKey="simulation_date" 
+                tickFormatter={(dateStr) => {
+                  const date = new Date(dateStr);
+                  return date.toLocaleDateString('default', {month: 'short', year: 'numeric'});
+                }}
+              />
               <YAxis />
-              <Tooltip />
+              <Tooltip
+                labelFormatter={(dateStr) => {
+                  const date = new Date(dateStr);
+                  return date.toLocaleDateString('default', {month: 'long', year: 'numeric'});
+                }}
+
+                formatter={(value, name, props) => {
+                  const rounded = parseInt(value);
+                  return [`${rounded} kWh`, 'Usage']
+                }}
+              />
               <Legend />
               <Bar dataKey="total_usage" fill="#82ca9d" name="Usage (kWh)" />
             </BarChart>

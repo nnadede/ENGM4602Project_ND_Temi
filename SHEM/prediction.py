@@ -30,7 +30,7 @@ class PredictionModel:
 
             X = historical_data[["month_index"]].values
             y = historical_data["total_usage"].values
-            if len(X) < 2:
+            if len(X) < 24:
                 # Not enough data to train a meaningful model
                 return
 

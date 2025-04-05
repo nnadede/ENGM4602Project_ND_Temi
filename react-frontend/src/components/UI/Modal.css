@@ -71,3 +71,33 @@
     transition: all 200ms;
   }
   
+/* This section below is CSS styling for the Error Modal*/
+
+.error-container {
+  display: flex;
+  flex-direction: column; /* Stack icon and text vertically */
+  align-items: center; /* Center them horizontally */
+  text-align: center;
+  padding: 1rem; /* to create some space around content */
+}
+
+  .error-icon {
+    width: 50px;
+    height: 50px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem; /* creates little bit of space below the icon*/
+  }
+
+.error-text {
+  font-size: 1.2rem;
+  color: #333;     /* Or match your brand colors */
+  margin: 0;        /* Remove default paragraph margin */
+  line-height: 1.5;
+}
