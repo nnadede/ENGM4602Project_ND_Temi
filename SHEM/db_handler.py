@@ -1,14 +1,27 @@
 # SHEM/db_handler.py
+import os
 import datetime
 from pymongo import MongoClient
+from dotenv import load_dotenv
+
+
+#Loading the variables from .env into this environment
+load_dotenv()
 
 class DBHandler:
     def __init__(
         self,
-        uri="mongodb+srv://Temicruise007:Goldberg136166@cluster0.txypd.mongodb.net/smart_home_energy_monitor?retryWrites=true&w=majority&appName=Cluster0",
-        db_name="smart_home_energy_monitor",
-        collection_name="readings"
+        uri=None,
+        db_name=None,
+        collection_name=None
     ):
+        #if no values are provided explicitly, pull them from environment variables
+        if not uri:
+            uri = os.getenv("SHEM_DB_URI")
+        if not db_name:
+            db_name =  os.getenv("SHEM_DB_NAME")
+        if not collection_name:
+            collection_name = os.getenv("SHEM_COLLECTION_NAME")
         """
         Connect to MongoDB Atlas using the given URI.
         """

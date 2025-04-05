@@ -1,4 +1,4 @@
-# Smart Home Energy Monitor (MongoDB Version) – v3.0
+# Smart Home Energy Monitor (MongoDB Version) – v4.0
 
 This project simulates a monthly smart home energy monitoring system using Python, Flask, and MongoDB Atlas. It provides a React front-end for visualizing energy usage, cost, interactive predictions, and breakdowns. The application uses scikit-learn for basic predictive analytics.
 
@@ -8,9 +8,9 @@ This project simulates a monthly smart home energy monitoring system using Pytho
 
 ### Monthly Simulation
 - **Advances Month-by-Month:** Each simulation run advances the month by one from the latest date in the database (or uses the current date if none exist).
-- **Randomized Sensor Data:** Usage is randomized per sensor.
+- **Randomized Sensor Data:** Sensor usage is dynamically randomized while considering usage-range and seasonal factors
 - **Realistic Cost Calculation:** Cost is calculated from usage at a realistic rate (e.g., $0.12/kWh).
-- **Dedicated HVAC Sensor:** HVAC is added as a separate sensor category.
+
 
 ### Data Storage in MongoDB
 - **Simplified Timestamps:** Readings are stored with a `simulation_date` (e.g., "2025-03-01") instead of full timestamps.
@@ -18,15 +18,21 @@ This project simulates a monthly smart home energy monitoring system using Pytho
 
 ### Prediction Model
 - **Linear Regression:** A Linear Regression model is trained on historical monthly totals (usage vs. month index).
-- **Data Requirements:** If there is insufficient data (fewer than two months of history), the model remains untrained and predictions are unavailable.
+- **Data Requirements:** The model is only trained if sufficient historical data exists (minimum of 24 months of data). If not, predictions remain unavailable.
+- **Usage Forecast:** The endpoint predicts future monthly energy usage based on the computed month index.
 
 ### Flask API Endpoints
 - **`POST /simulate`**: Generates and logs readings for the next month.
-- **`GET /readings?month=YYYY-MM[-DD]`**: Fetches usage/cost data for a given month (or the latest if omitted). The endpoint accepts either a full date (`YYYY-MM-DD`) or a year-month (`YYYY-MM`) for filtering.
+- **`GET /readings?month=YYYY-MM[-DD]`**: Fetches usage and cost data for the most recently simulated month
 - **`DELETE /clear_readings`**: Clears all readings in the database.
-- **`GET /history`**: Returns aggregated usage/cost for each simulated month (for charts).
-- **`GET /predict?month=YYYY-MM-DD`**: Predicts monthly usage if enough data is available.
-- **`GET /suggestions?usage=...`**: Provides energy-saving suggestions based on a usage value.
+- **`GET /history`**: Returns aggregated usage and cost for each simulated month (for charts).
+- **`GET /predict?month=YYYY-MM-DD`**: Predicts monthly usage if enough data is available. minimum of 24 data points needs to be on the database. This means you must simulate for atleast 24 months to be able to use the endpoint
+- **`GET /breakdown?month=YYYY-MM[-DD]`** Returns a detailed breakdown for the most recently simulated month(if no month is specified) or for a selected month including:
+  - **Tabular Data:** Cost and Power Usage by categories
+  - **Efficiency Rating:** A rating (A-F) based on total usage.
+  - **Suggestions:** Tailored energy-saving tips based on the usage levels.
+
+
 
 ### React Front-End
 - **Home:**  
@@ -66,12 +72,12 @@ This project simulates a monthly smart home energy monitoring system using Pytho
 ## Installation & Setup
 
 ### 1. Clone the Repository
-Make sure you switch to the `version-3.0` branch:
+Make sure you switch to the `version-4.0` branch:
 
 ```
 git clone https://github.com/nnadede/ENGM4602Project_ND_Temi.git
 cd smart_home_energy_monitor
-git checkout version-3.0
+git checkout version-4.0
 ```
 
 ### 2. Configure MongoDB Atlas
@@ -95,6 +101,8 @@ python -m SHEM.flask_app
 By default, it listens on http://127.0.0.1:5000.
 
 ### 5. Install and Run the React Front-End
+Make sure you have downloaded and installed Node.js on your system prior to running the 'npm install' and 'npm start' commands otherwise, it wouldn't work.
+
 Inside the react-frontend folder, run:
 ```
 cd react-frontend
@@ -108,20 +116,19 @@ This starts a development server on http://localhost:3000.
 Simulate Next Month: Go to the Readings section in the React app and click Simulate Next Month.
 This creates new sensor data for the next month and logs it in MongoDB.
 
-### View Readings
-- Latest Month’s Data: The Readings page displays the latest month’s usage and cost per category.
-- Query Historical Data: You can query older months by entering a year and month (in YYYY-MM format) in the Breakdown page or via the GET /readings endpoint.
+### View Readings & Breakdown
+- Readings: Displays the latest month's sensor data with cost and usage details.
 
-### Check Breakdown
-- Usage/Cost Distribution: The Breakdown page displays the usage and cost distribution by category for a selected month.
-Input requires only the year and month (e.g., "2025-05").
+- Breakdown: Provides a detailed tabular view of monthly cost and power usage, along with an efficiency rating and suggestions.
+If a month with no data is queried (e.g., "2024-12"), the application translates the date into a human-readable format (e.g., "December 2024") in the response message.
+
   
 ### Predict Future Usage
-- Forecasting: In the Predict section, enter a future month (e.g., "2025-05-01").
-If enough data (≥2 months) is available, the app returns a forecasted monthly usage.
+- Forecasting: In the Predict page, enter a future month (e.g., "2035-01").
+If enough data (≥24 months) is available, the app returns a forecasted monthly usage.
 
 ### Suggestions
-- Energy-Saving Tips: The Suggestions page accepts a numeric usage value and returns tips for reducing energy consumption.
+- Energy-Saving Tips: The Breakdown page also returns tips for reducing energy consumption based on your energy effieciency rating.
 
 ### Clear Data
 - Database Reset: The Readings page now includes an inline "Clear All Data" button.

@@ -11,3 +11,6 @@ _psycache_/  # if this folder actually exists and is spelled this way
 # (Optional) OS-specific files
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
