@@ -1,76 +1,229 @@
-/* src/App.css */
+/* ===================================================================
+   SMART HOME ENERGY MONITOR - MAIN CSS
+   This CSS file defines the styling for the entire application, including:
+   - Navigation/Header styling
+   - Main content area styling (for pages, tables, buttons, etc.)
+   =================================================================== */
+
+
+/* ===================== NAVIGATION SECTION ===================== */
+
+/* 
+   nav:
+   - Sets the background color of the header.
+   - Adds padding for spacing.
+   - Uses Flexbox to align and distribute child elements.
+   - 'justify-content: space-between' pushes the logo to the left and nav links to the right.
+*/
+nav {
+  background-color: #2a006e;           /* Dark purple header background */
+  padding: 20px;                       /* Space around the nav content */
+  display: flex;                       /* Enable flexbox layout */
+  align-items: center;                 /* Vertically center items */
+  justify-content: space-between;      /* Space out items: logo left, links right */
+}
+
+/* 
+   .nav-logo:
+   - Container for the logo and text.
+   - Uses Flexbox to align the logo image with the accompanying text horizontally.
+*/
+.nav-logo {
+  display: flex;                       /* Horizontal layout */
+  align-items: center;                 /* Vertically center content */
+}
+
+/* 
+   .nav-logo-link:
+   - Wraps the logo image and the accompanying text (“SHEM”) in a clickable link.
+   - Removes default text decoration.
+   - Adds padding and rounded corners to give a button-like appearance.
+   - Includes a transition on background color for smooth hover effects.
+*/
+.nav-logo-link {
+  display: inline-flex;               /* Inline-flex to wrap tightly around content */
+  align-items: center;                 /* Center vertically within the link */
+  text-decoration: none;               /* Remove default underline */
+  padding: 8px 12px;                   /* Space around the content */
+  border-radius: 6px;                  /* Rounded corners */
+  transition: background-color 0.2s ease-in-out; /* Smooth transition for hover */
+}
+
+/* 
+   .nav-logo-link:hover:
+   - Applies a light semi-transparent background when the logo link is hovered over.
+   - Changes the cursor to a pointer.
+*/
+.nav-logo-link:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Light background on hover */
+  cursor: pointer;                            /* Pointer cursor for interactivity */
+}
+
+/* 
+   .nav-logo-link img:
+   - Styles the logo image.
+   - Sets a fixed height (adjust as needed) while preserving aspect ratio.
+   - Adds right margin to create spacing between the logo and the text.
+*/
+.nav-logo-link img {
+  height: 70px;                        /* Fixed height for the logo image */
+  width: auto;                         /* Maintain aspect ratio */
+  margin-right: 10px;                  /* Space between logo and text */
+}
+
+/* 
+   .logo-text:
+   - Styles the text that appears beside the logo.
+   - Sets the text color, font size, and weight.
+*/
+.logo-text {
+  color: #fff;                         /* White text color */
+  font-size: 1.5rem;                   /* Larger text size */
+  font-weight: bold;                   /* Bold text */
+}
+
+/* 
+   .nav-links:
+   - Container for the navigation links on the right side of the header.
+   - Removes default list styling and applies Flexbox for horizontal layout.
+*/
+.nav-links {
+  list-style: none;                    /* Remove bullet points */
+  margin: 0;                           /* Remove default margin */
+  padding: 0;                          /* Remove default padding */
+  display: flex;                       /* Arrange links in a row */
+}
+
+/* 
+   .nav-links li:
+   - Styles each list item within the navigation links.
+   - Adds left margin to space out the links.
+*/
+.nav-links li {
+  margin-left: 0;                   /* Space between each nav link */
+}
+
+/* 
+   .nav-links li a:
+   - Styles the anchor elements inside nav links.
+   - Sets the text color, removes text decoration, and adds padding and rounded corners for a button-like feel.
+   - Adds a transition for a smooth background and color change on hover.
+*/
+.nav-links li a {
+  color: #fff;                         /* White text for the nav links */
+  text-decoration: none;               /* Remove default underline */
+  padding: 8px 12px;                   /* Padding for clickable area */
+  border-radius: 6px;                  /* Rounded corners matching the logo link */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; /* Smooth transitions for hover effects */
+}
+
+/* 
+   .nav-links li a:hover:
+   - Applies the same hover effect as the logo by adding a light semi-transparent background.
+   - Changes the cursor to a pointer.
+*/
+.nav-links li a:hover {
+  background-color: rgba(255, 255, 255, 0.2); /* Light background on hover */
+  cursor: pointer;                            /* Pointer cursor on hover */
+}
+
+/* ===================== MAIN CONTENT SECTION ===================== */
+
+/*
+   Body:
+   - Defines a universal font family.
+   - Removes default margin and padding.
+   - Sets a light gray background color for the overall page.
+*/
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-  }
-  
-  .app-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-  
-  nav {
-    background-color: #2a006e;
-    padding: 10px;
-  }
-  
-  .nav-links {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-  }
-  
-  .nav-links li {
-    margin-right: 20px;
-  }
-  
-  .nav-links li a {
-    color: #fff;
-    text-decoration: none;
-  }
-  
-  main {
-    background-color: #fff;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 4px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-  }
-  
-  table, th, td {
-    border: 1px solid #ddd;
-  }
-  
-  th, td {
-    padding: 8px;
-    text-align: center;
-  }
-  
-  button {
-    padding: 10px 20px;
-    background-color: #2a006e;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-  
-  button:hover {
-    background-color: #3f00b3;
-  }
-  
-  /* Click (active) effect */
+  font-family: Arial, sans-serif;      /* Default font for the page */
+  margin: 0;                           /* Remove default margin */
+  padding: 0;                          /* Remove default padding */
+  background-color: #f4f4f4;             /* Light gray background */
+}
+
+/*
+   .app-container:
+   - Centers the main application content.
+   - Sets a maximum width and adds padding for overall page layout.
+*/
+.app-container {
+  max-width: 1200px;                   /* Maximum width for content */
+  margin: 0 auto;                      /* Center the container horizontally */
+  padding: 20px;                       /* Padding around the container */
+}
+
+/*
+   main:
+   - Styles the main content area where different pages are rendered.
+   - Uses a white background, padding, margin, and rounded corners.
+   - Adds a subtle box shadow for depth.
+*/
+main {
+  background-color: #fff;              /* White background for main content */
+  padding: 20px;                       /* Padding inside the main content */
+  margin-top: 20px;                    /* Top margin to separate from the header */
+  border-radius: 4px;                  /* Slightly rounded corners */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+}
+
+/*
+   table:
+   - Ensures tables span the full width of their container.
+   - Sets border collapse for a cleaner look.
+   - Adds a top margin.
+*/
+table {
+  width: 100%;                         /* Table takes full width */
+  border-collapse: collapse;           /* Remove spacing between cell borders */
+  margin-top: 10px;                    /* Space above the table */
+}
+
+/*
+   table, th, td:
+   - Applies a light border around tables, table headers, and cells.
+*/
+table, th, td {
+  border: 1px solid #ddd;              /* Light gray border for table elements */
+}
+
+/*
+   th, td:
+   - Adds padding inside table cells and centers the text.
+*/
+th, td {
+  padding: 8px;                        /* Padding inside each cell */
+  text-align: center;                  /* Center text horizontally in cells */
+}
+
+/*
+   button:
+   - Styles buttons with padding, background color, text color, and rounded corners.
+   - Sets the cursor to pointer when hovering.
+   - Adds top margin.
+*/
+button {
+  padding: 10px 20px;                  /* Padding for button size */
+  background-color: #2a006e;           /* Button background color */
+  color: #fff;                         /* Button text color */
+  border: none;                        /* Remove default border */
+  border-radius: 4px;                  /* Rounded button corners */
+  cursor: pointer;                     /* Pointer cursor on hover */
+  margin-top: 10px;                    /* Space above the button */
+}
+
+/*
+   button:hover:
+   - Changes the background color of buttons when hovered over.
+*/
+button:hover {
+  background-color: #3f00b3;           /* Darker background on hover */
+}
+
+/*
+   button:active:
+   - Applies a slight translation effect when buttons are clicked (active state).
+*/
 button:active {
-  transform: translate(2px, 2px);
+  transform: translate(2px, 2px);      /* Move button by 2px on click */
 }

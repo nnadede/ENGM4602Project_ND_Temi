@@ -15,8 +15,14 @@ function App() {
     <Router>
       <div className="app-container">
         <nav>
+          <div className='nav-logo'>
+            {/* A clickable logo that links back to the home page */}
+            <Link to="/" className='nav-logo-link'>
+              <img src='/images/logo.png' alt='Smart Home Energy Monitor Logo' />
+              <span className='logo-text'>SHEM</span>
+            </Link>
+          </div> 
           <ul className="nav-links">
-            <li><Link to="/">Home</Link></li>
             <li><Link to="/readings">Readings</Link></li>
             <li><Link to="/predict">Predict</Link></li>
             <li><Link to="/breakdown">Breakdown</Link></li>
